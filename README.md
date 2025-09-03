@@ -11,6 +11,8 @@ Casicas, James
 Singson, John Rey 
 Tumulak, Aldwin
 
+BSIT3-1 SIA
+
 ## 🚀 Features
 
 - Generate QR codes from text or URLs
