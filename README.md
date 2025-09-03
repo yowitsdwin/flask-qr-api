@@ -4,6 +4,13 @@
 
 A lightweight Flask-based REST API for generating customizable QR codes. Supports returning QR codes as Base64 strings or downloadable PNG images.
 
+Created and Developed By :
+Abelgas, Junel 
+Ang, Joost Laven
+Casicas, James
+Singson, John Rey 
+Tumulak, Aldwin
+
 ## 🚀 Features
 
 - Generate QR codes from text or URLs
