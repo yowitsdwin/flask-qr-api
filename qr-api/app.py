@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request, send_file
 import qrcode
 import io
 import base64
+import barcode
+from barcode.writer import ImageWriter
 
 app = Flask(__name__)
 
@@ -47,6 +49,35 @@ def generate_qr_png_post():
 
     return send_file(buffer, mimetype='image/png', as_attachment=False, download_name="qrcode.png")
 
+@app.route('/generate-barcode', methods=['POST'])
+def generate_barcode():
+    data = request.json
+    text = data.get("text", "123456789012")  # default barcode text
+
+    try:
+        # Get barcode class (default: Code128)
+        barcode_format = data.get("format", "code128").lower()
+        BARCODE_CLASS = barcode.get_barcode_class(barcode_format)
+    except barcode.errors.BarcodeNotFoundError:
+        return jsonify({"error": f"Unsupported barcode format: {barcode_format}"}), 400
+
+    # Generate barcode image in memory
+    buffer = io.BytesIO()
+    try:
+        code = BARCODE_CLASS(text, writer=ImageWriter())
+        code.write(buffer)
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate barcode: {str(e)}"}), 500
+
+    buffer.seek(0)
+
+    # Return base64 version of barcode image
+    img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return jsonify({
+        "barcode_base64": img_b64,
+        "format": barcode_format,
+        "mime_type": "image/png"
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
