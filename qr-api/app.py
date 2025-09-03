@@ -79,5 +79,32 @@ def generate_barcode():
         "mime_type": "image/png"
     })
 
+@app.route('/generate-barcode/png', methods=['POST'])
+def generate_barcode_png():
+    data = request.json
+    text = data.get("text", "123456789012")
+    barcode_format = data.get("format", "code128").lower()
+
+    try:
+        BarcodeClass = barcode.get_barcode_class(barcode_format)
+    except barcode.errors.BarcodeNotFoundError:
+        return jsonify({"error": f"Unsupported barcode format: {barcode_format}"}), 400
+
+    # Create barcode with ImageWriter for PNG output
+    buffer = io.BytesIO()
+    try:
+        barcode_instance = BarcodeClass(text, writer=ImageWriter())
+        barcode_instance.write(buffer)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    buffer.seek(0)
+    return send_file(
+        buffer,
+        mimetype='image/png',
+        as_attachment=False,
+        download_name="barcode.png"
+    )
+
 if __name__ == '__main__':
     app.run(debug=True)
