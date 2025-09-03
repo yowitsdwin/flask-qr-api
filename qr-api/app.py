@@ -141,5 +141,25 @@ def decode_upload():
 
     return jsonify({"decoded": decoded})
 
+# 2. Decode by base64 image (camera capture)
+@app.route('/decode/camera', methods=['POST'])
+def decode_camera():
+    data = request.json
+    img_b64 = data.get("image_base64")
+    if not img_b64:
+        return jsonify({"error": "No image_base64 provided"}), 400
+
+    try:
+        img_bytes = base64.b64decode(img_b64)
+        img = Image.open(io.BytesIO(img_bytes))
+    except Exception as e:
+        return jsonify({"error": f"Invalid image data: {str(e)}"}), 400
+
+    decoded = decode_image(img)
+    if not decoded:
+        return jsonify({"error": "No QR code or barcode detected"}), 404
+
+    return jsonify({"decoded": decoded})
+
 if __name__ == '__main__':
     app.run(debug=True)

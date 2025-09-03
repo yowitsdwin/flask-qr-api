@@ -1,130 +1,211 @@
 # flask-qr-api
 
-# 🧾 QR Code Generator API
+## 🧾 QR Code and Barcode Generator API
 
-A lightweight Flask-based REST API for generating customizable QR codes. Supports returning QR codes as Base64 strings or downloadable PNG images.
-
-Created and Developed By :
-Abelgas, Junel 
-Ang, Joost Laven
-Casicas, James
-Singson, John Rey 
-Tumulak, Aldwin
-
-BSIT3-1 SIA
-SIA instructor: Mr. Yestin Roy A. Prado
-
-## 🚀 Features
-
-- Generate QR codes from text or URLs
-- Customize QR code appearance (color, size, border)
-- Return as Base64 string or PNG image
-- Lightweight and fast (uses Flask + qrcode)
-
-## 📦 Requirements
-
-- Python 3.7+
-- Flask
-- qrcode
-
-### 🔧 Installation
-
-```bash
-pip install flask qrcode[pil]
+A lightweight Flask-based REST API for generating customizable QR codes and barcodes.  
+Supports returning images as Base64 strings or downloadable PNG files.  
+Also supports decoding QR codes and barcodes from uploaded images or base64 data.
 
 ---
 
-### 🔹 Step 5: Add How to Run the API
+### Created and Developed By:  
+- Abelgas, Junel  
+- Ang, Joost Laven  
+- Casicas, James  
+- Singson, John Rey  
+- Tumulak, Aldwin  
 
-```markdown
-## 🛠️ Running the API
+BSIT3-1 SIA  
+SIA instructor: Mr. Yestin Roy A. Prado
+
+---
+
+## 🚀 Features
+
+- Generate QR codes and barcodes from text or URLs  
+- Customize QR code appearance (color, size, border)  
+- Return QR/barcode as Base64 string or PNG image  
+- Decode QR codes and barcodes from uploaded images or base64-encoded camera captures  
+- Lightweight and fast (built with Flask + qrcode + python-barcode + pyzbar)
+
+---
+
+## 📦 Requirements
+
+- Python 3.7+  
+- Flask  
+- qrcode[pil]  
+- Pillow  
+- python-barcode  
+- pyzbar  
+- gunicorn (optional, for production)
+
+---
+
+## 🔧 Installation
 
 ```bash
+pip install Flask qrcode[pil] Pillow python-barcode pyzbar gunicorn
+
+
+```
+🛠️ Running the API
 python app.py
+
 
 The API will start at:
 http://127.0.0.1:5000/
 
+📁 Project Structure
+flask-qr-api/
+│
+├── app.py           # Flask application with all endpoints
+├── requirements.txt # Dependencies list
+└── README.md        # This documentation
 
----
+📌 API Endpoints
+1. Generate QR Code as Base64
 
-### 🔹 Step 6: Document the API Endpoints
+POST /generate-qr
 
-Use tables and examples to document your endpoints.
+Request Body:
 
-#### Example for Base64 QR Endpoint:
+Field	Type	Required	Default	Description
+text	string	No	"Hello World"	Text or URL to encode
+box_size	int	No	8	Size of QR code boxes
+border	int	No	2	Border width
+fill_color	string	No	"black"	Foreground color
+back_color	string	No	"white"	Background color
 
-```markdown
-### 📌 Generate QR Code as Base64
+Example Request:
 
-**Endpoint:**  
-`POST /generate-qr`
-
-**Request Body:**
-
-| Field         | Type    | Required | Default        | Description                               |
-|---------------|---------|----------|----------------|-------------------------------------------|
-| `text`        | string  | No       | "Hello World"  | Text or URL to encode in QR code          |
-| `box_size`    | int     | No       | 8              | Size of QR boxes                           |
-| `border`      | int     | No       | 2              | Width of border in boxes                  |
-| `fill_color`  | string  | No       | "black"        | Foreground color                          |
-| `back_color`  | string  | No       | "white"        | Background color                          |
-
-**Example Request:**
-
-```json
 {
   "text": "https://example.com",
   "fill_color": "blue",
   "back_color": "white"
 }
 
+
 Example Response:
+
 {
   "qr_code_base64": "iVBORw0KGgoAAAANSUhEUgAAA..."
 }
 
-Repeat this for the `/generate-qr/png` endpoint.
+2. Generate QR Code as PNG Image
 
----
+POST /generate-qr/png
 
-### 🔹 Step 7: Add cURL Examples
+Same request body as above.
 
-Provide users with ready-to-copy command-line examples:
+Returns: PNG image file.
+3. Generate Barcode as Base64
 
-```markdown
-## 🧪 Example with cURL
+POST /generate-barcode
 
-### Generate QR as Base64
+Request Body:
 
-```bash
+Field	Type	Required	Default	Description
+text	string	No	"123456789012"	Text to encode in barcode
+format	string	No	"code128"	Barcode format (e.g., code128, ean13)
+
+Example Request:
+
+{
+  "text": "012345678905",
+  "format": "ean13"
+}
+
+
+Example Response:
+
+{
+  "barcode_base64": "iVBORw0KGgoAAAANSUhEUgAAA...",
+  "format": "ean13",
+  "mime_type": "image/png"
+}
+
+4. Generate Barcode as PNG Image
+
+POST /generate-barcode/png
+
+Same request body as above. Returns PNG image file.
+
+5. Decode QR/Barcode from Uploaded Image
+
+POST /decode/upload
+
+Form Data:
+
+file: Image file to upload (QR code or barcode)
+
+Example Response:
+
+{
+  "decoded": [
+    {
+      "type": "QRCODE",
+      "data": "https://example.com"
+    }
+  ]
+}
+
+6. Decode QR/Barcode from Base64 Image
+
+POST /decode/camera
+
+Request Body:
+
+Field	Type	Required	Description
+image_base64	string	Yes	Base64-encoded image data
+
+Example Request:
+
+{
+  "image_base64": "<base64-encoded-image-string>"
+}
+🧪 Example cURL Requests
+Generate QR as Base64
 curl -X POST http://localhost:5000/generate-qr \
   -H "Content-Type: application/json" \
   -d '{"text":"https://openai.com"}'
 
-Download PNG Image
+Download QR as PNG Image
 curl -X POST http://localhost:5000/generate-qr/png \
   -H "Content-Type: application/json" \
   -d '{"text":"https://openai.com"}' \
   --output qrcode.png
 
----
+Generate Barcode as Base64
+curl -X POST http://localhost:5000/generate-barcode \
+  -H "Content-Type: application/json" \
+  -d '{"text":"012345678905","format":"ean13"}'
 
-### 🔹 Step 8: Add Optional Sections
+Download Barcode as PNG Image
+curl -X POST http://localhost:5000/generate-barcode/png \
+  -H "Content-Type: application/json" \
+  -d '{"text":"012345678905","format":"ean13"}' \
+  --output barcode.png
 
-Add any of these if applicable:
+Decode QR/Barcode from Uploaded Image
+curl -X POST http://localhost:5000/decode/upload \
+  -F "file=@/path/to/your/image.png"
 
-#### 📁 Project Structure
+Decode QR/Barcode from Base64 Image
+curl -X POST http://localhost:5000/decode/camera \
+  -H "Content-Type: application/json" \
+  -d '{"image_base64":"<base64-string>"}'
 
-```markdown
-## 📁 Project Structure
+🤝 Contributing
 
+Pull requests and feedback are welcome!
+Feel free to open an issue or submit a PR.
 
-
-## 🛡️ License
+🛡️ License
 
 This project is licensed under the MIT License.
 
-## 🤝 Contributing
 
-Pull requests and feedback are welcome! Open an issue or submit a PR.
+---
+
+Just copy-paste this into your `README.md` in VSCode and you’re good to go! Need help adding badges or anything else?
