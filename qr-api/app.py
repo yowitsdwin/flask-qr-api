@@ -4,6 +4,8 @@ import io
 import base64
 import barcode
 from barcode.writer import ImageWriter
+from pyzbar.pyzbar import decode
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -105,6 +107,39 @@ def generate_barcode_png():
         as_attachment=False,
         download_name="barcode.png"
     )
+
+def decode_image(img):
+    decoded_objects = decode(img)
+    if not decoded_objects:
+        return None
+    results = []
+    for obj in decoded_objects:
+        results.append({
+            "type": obj.type,
+            "data": obj.data.decode('utf-8')
+        })
+    return results
+
+# 1. Decode by uploaded image file
+@app.route('/decode/upload', methods=['POST'])
+def decode_upload():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    try:
+        img = Image.open(file.stream)
+    except Exception as e:
+        return jsonify({"error": f"Invalid image file: {str(e)}"}), 400
+
+    decoded = decode_image(img)
+    if not decoded:
+        return jsonify({"error": "No QR code or barcode detected"}), 404
+
+    return jsonify({"decoded": decoded})
 
 if __name__ == '__main__':
     app.run(debug=True)
