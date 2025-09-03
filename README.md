@@ -12,6 +12,7 @@ Singson, John Rey
 Tumulak, Aldwin
 
 BSIT3-1 SIA
+SIA instructor: Mr. Yestin Roy A. Prado
 
 ## 🚀 Features
 
