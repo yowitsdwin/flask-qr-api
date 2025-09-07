@@ -45,7 +45,7 @@ SIA instructor: Mr. Yestin Roy A. Prado
 ## 🔧 Installation
 
 ```bash
-pip install Flask qrcode[pil] Pillow python-barcode pyzbar gunicorn
+pip install -r requirements.txt
 
 
 ```
