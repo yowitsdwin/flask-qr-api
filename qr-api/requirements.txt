@@ -1,6 +1,8 @@
 Flask
+Flask-CORS
 qrcode[pil]
 Pillow
 python-barcode
 gunicorn
-pyzbar
+opencv-python
+numpy

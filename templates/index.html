@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>QR Code & Barcode API Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+            background: white;
+        }
+
+        .tab:hover {
+            background: rgba(0,123,255,0.1);
+        }
+
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .file-upload {
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0,123,255,0.05);
+        }
+
+        .file-upload:hover {
+            background: rgba(0,123,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-upload.dragover {
+            background: rgba(0,123,255,0.15);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 15px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔲 QR & Barcode API Tester</h1>
+            <p>Test your Flask endpoints with a visual interface</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('generate-qr', event)">Generate QR Code</button>
+            <button class="tab" onclick="switchTab('generate-barcode', event)">Generate Barcode</button>
+            <button class="tab" onclick="switchTab('decode-upload', event)">Decode Image</button>
+        </div>
+
+        <!-- GENERATE QR -->
+        <div id="generate-qr" class="tab-content active">
+            <h2>Generate QR Code</h2>
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label for="qr-text">Text to Encode:</label>
+                        <textarea id="qr-text" rows="3" placeholder="Enter text, URL, or data to encode">https://example.com</textarea>
+                    </div>
+                    <div class="config-grid">
+                        <div class="form-group">
+                            <label for="qr-box-size">Box Size:</label>
+                            <input type="number" id="qr-box-size" value="8" min="1" max="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="qr-border">Border:</label>
+                            <input type="number" id="qr-border" value="2" min="0" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="qr-fill-color">Fill Color:</label>
+                            <input type="color" id="qr-fill-color" value="#000000">
+                        </div>
+                        <div class="form-group">
+                            <label for="qr-back-color">Background Color:</label>
+                            <input type="color" id="qr-back-color" value="#ffffff">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="api-url">API Base URL:</label>
+                        <input type="text" id="api-url" value="http://localhost:5000" placeholder="http://localhost:5000">
+                        <small style="color:#6c757d;">Make sure your Flask app is running</small>
+                    </div>
+                    <button class="btn" onclick="generateQR()">Generate QR Code</button>
+                </div>
+                <div id="qr-result"></div>
+            </div>
+        </div>
+
+        <!-- GENERATE BARCODE -->
+        <div id="generate-barcode" class="tab-content">
+            <h2>Generate Barcode</h2>
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label for="barcode-text">Text to Encode:</label>
+                        <input type="text" id="barcode-text" placeholder="123456789012" value="123456789012">
+                    </div>
+                    <div class="form-group">
+                        <label for="barcode-format">Barcode Format:</label>
+                        <select id="barcode-format">
+                            <option value="code128">Code 128</option>
+                            <option value="code39">Code 39</option>
+                            <option value="ean13">EAN-13</option>
+                            <option value="ean8">EAN-8</option>
+                            <option value="upc">UPC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="api-url-2">API Base URL:</label>
+                        <input type="text" id="api-url-2" value="http://localhost:5000" placeholder="http://localhost:5000">
+                    </div>
+                    <button class="btn" onclick="generateBarcode()">Generate Barcode</button>
+                </div>
+                <div id="barcode-result"></div>
+            </div>
+        </div>
+
+        <!-- DECODE UPLOAD -->
+        <div id="decode-upload" class="tab-content">
+            <h2>Decode QR Code from Image</h2>
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label>Upload Image File:</label>
+                        <div class="file-upload" id="drop-area" onclick="document.getElementById('file-input').click()" 
+                             ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+                            <div class="upload-icon">📷</div>
+                            <p><strong>Click to upload</strong> or drag & drop</p>
+                            <p>PNG, JPG, or any image with QR code</p>
+                            <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="api-url-3">API Base URL:</label>
+                        <input type="text" id="api-url-3" value="http://localhost:5000" placeholder="http://localhost:5000">
+                        <small style="color:#6c757d;">Make sure your Flask app is running</small>
+                    </div>
+
+                    <button class="btn" id="decode-btn" onclick="decodeImage()" disabled>Decode QR Code</button>
+                </div>
+                <div id="decode-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        function switchTab(tabName, evt) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+        }
+
+        function setLoading(targetDiv, message = 'Processing...') {
+            targetDiv.innerHTML = '<div class="loading"></div>' + message;
+        }
+
+        function showError(targetDiv, message) {
+            targetDiv.innerHTML = `<div class="result error"><h3>Error</h3><p>${escapeHtml(message)}</p></div>`;
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        async function generateQR() {
+            const apiUrl = document.getElementById('api-url').value.replace(/\/$/, '');
+            const text = document.getElementById('qr-text').value;
+            const boxSize = parseInt(document.getElementById('qr-box-size').value) || 8;
+            const border = parseInt(document.getElementById('qr-border').value) || 2;
+            const fillColor = document.getElementById('qr-fill-color').value;
+            const backColor = document.getElementById('qr-back-color').value;
+            const resultDiv = document.getElementById('qr-result');
+
+            setLoading(resultDiv, 'Generating QR Code...');
+
+            try {
+                const res = await fetch(`${apiUrl}/generate-qr`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text,
+                        box_size: boxSize,
+                        border,
+                        fill_color: fillColor,
+                        back_color: backColor
+                    })
+                });
+
+                let payload;
+                try { payload = await res.json(); } catch (e) { const txt = await res.text(); throw new Error(txt || 'Invalid JSON response'); }
+
+                if (!res.ok) throw new Error(payload.error || JSON.stringify(payload) || 'Request failed');
+
+                const b64 = payload.qr_code_base64;
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>Generated QR Code</h3>
+                        <p><strong>Text:</strong> ${escapeHtml(text)}</p>
+                        <p><strong>Settings:</strong> Box Size: ${boxSize}, Border: ${border}</p>
+                        <img src="data:image/png;base64,${b64}" alt="QR" class="image-preview">
+                        <div style="margin-top:12px;">
+                            <a class="btn" href="data:image/png;base64,${b64}" download="qrcode.png">Download PNG</a>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                showError(resultDiv, err.message);
+            }
+        }
+
+        async function generateBarcode() {
+            const apiUrl = document.getElementById('api-url-2').value.replace(/\/$/, '');
+            const text = document.getElementById('barcode-text').value;
+            const format = document.getElementById('barcode-format').value;
+            const resultDiv = document.getElementById('barcode-result');
+
+            setLoading(resultDiv, 'Generating Barcode...');
+
+            try {
+                const res = await fetch(`${apiUrl}/generate-barcode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, format })
+                });
+
+                let payload;
+                try { payload = await res.json(); } catch (e) { const txt = await res.text(); throw new Error(txt || 'Invalid JSON response'); }
+
+                if (!res.ok) throw new Error(payload.error || JSON.stringify(payload) || 'Request failed');
+
+                const b64 = payload.barcode_base64;
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>Generated Barcode</h3>
+                        <p><strong>Text:</strong> ${escapeHtml(text)}</p>
+                        <p><strong>Format:</strong> ${escapeHtml(format.toUpperCase())}</p>
+                        <img src="data:image/png;base64,${b64}" alt="Barcode" class="image-preview">
+                        <div style="margin-top:12px;">
+                            <a class="btn" href="data:image/png;base64,${b64}" download="barcode.png">Download PNG</a>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                showError(resultDiv, err.message);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = (e.target && e.target.files && e.target.files[0]) || null;
+            if (file && file.type.startsWith('image/')) {
+                selectedFile = file;
+                displayImagePreview(file);
+                document.getElementById('decode-btn').disabled = false;
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                selectedFile = files[0];
+                displayImagePreview(selectedFile);
+                document.getElementById('decode-btn').disabled = false;
+            }
+        }
+
+        function displayImagePreview(file) {
+            const url = URL.createObjectURL(file);
+            document.getElementById('decode-result').innerHTML = `
+                <div class="result">
+                    <h3>Image Preview</h3>
+                    <p><strong>File:</strong> ${escapeHtml(file.name)}</p>
+                    <p><strong>Size:</strong> ${(file.size / 1024).toFixed(1)} KB</p>
+                    <img src="${url}" alt="Preview" class="image-preview">
+                </div>
+            `;
+        }
+
+        async function decodeImage() {
+            if (!selectedFile) { alert('Please select an image file first'); return; }
+            const apiUrl = document.getElementById('api-url-3').value.replace(/\/$/, '');
+            const resultDiv = document.getElementById('decode-result');
+
+            setLoading(resultDiv, 'Decoding QR Code...');
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const res = await fetch(`${apiUrl}/decode/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                let payload;
+                try { payload = await res.json(); } catch (e) { const txt = await res.text(); throw new Error(txt || 'Invalid JSON response'); }
+
+                if (!res.ok) throw new Error(payload.error || JSON.stringify(payload) || 'Request failed');
+
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>Decoded Result</h3>
+                        <pre style="white-space:pre-wrap;">${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+                        <div style="margin-top:10px;">
+                            <a class="btn" href="${URL.createObjectURL(selectedFile)}" target="_blank">Open Selected Image</a>
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                showError(resultDiv, err.message);
+            }
+        }
+
+        // Wire file input
+        document.getElementById('file-input').addEventListener('change', handleFileSelect);
+        // Remove dragover class on leave
+        document.addEventListener('dragleave', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('file-upload')) {
+                e.target.classList.remove('dragover');
+            }
+        });
+    </script>
+</body>
+</html>
